@@ -1,15 +1,10 @@
-FROM ubuntu:20.04
+# Use the official Pi-hole Docker image
+FROM pihole/pihole:latest
 
-# Set non-interactive frontend and terminal settings
-ENV DEBIAN_FRONTEND=noninteractive
-ENV TERM=xterm
-
-# Install required packages
+# Install required packages: curl, bash, and unbound
 RUN apt-get update && \
-    apt-get install -y curl bash unbound
-
-# Install Pi-hole unattended
-RUN curl -sSL https://install.pi-hole.net | bash /dev/stdin --unattended
+    apt-get install -y curl bash unbound && \
+    apt-get clean
 
 # Unbound configuration for Pi-hole with DNSSEC
 RUN mkdir -p /etc/unbound/unbound.conf.d/ && \
@@ -39,9 +34,6 @@ RUN mkdir -p /etc/unbound/unbound.conf.d/ && \
 # Download the latest root trust anchor for DNSSEC
 RUN unbound-anchor -a /var/lib/unbound/root.key
 
-# Restart Unbound service
-RUN systemctl restart unbound
-
 # Add blocklists to Pi-hole
 RUN pihole -b https://someblocklisturl1.com/list.txt && \
     pihole -b https://someblocklisturl2.com/list.txt
@@ -58,4 +50,4 @@ RUN pihole -g
 EXPOSE 53/udp 80/tcp 443/tcp
 
 # Start Unbound and Pi-hole services when container starts
-CMD ["/bin/bash", "-c", "service unbound start && pihole-FTL"]
+CMD [ "/bin/bash", "-c", "unbound -d & pihole-FTL" ]
