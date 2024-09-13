@@ -1,0 +1,23 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo "Installing dependencies..."
+      - apt-get update -y && apt-get install -y docker
+  pre_build:
+    commands:
+      - echo "Logging in to Amazon ECR..."
+      - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
+  build:
+    commands:
+      - echo "Building the Docker images..."
+      - docker build -t pihole:latest -f Dockerfile.pihole .
+      - docker build -t vpn:latest -f Dockerfile.vpn .
+      - docker tag pihole:latest $REPOSITORY_URI:latest
+      - docker tag vpn:latest $REPOSITORY_URI_VPN:latest
+  post_build:
+    commands:
+      - echo "Pushing Docker images..."
+      - docker push $REPOSITORY_URI:latest
+      - docker push $REPOSITORY_URI_VPN:latest

@@ -1,0 +1,38 @@
+FROM ubuntu:20.04
+
+RUN apt-get update && apt-get install -y openvpn easy-rsa iptables
+
+RUN mkdir -p /etc/openvpn
+COPY ./server.conf /etc/openvpn/server.conf
+
+RUN make-cadir /etc/openvpn/easy-rsa && \
+    cd /etc/openvpn/easy-rsa && \
+    ./easyrsa init-pki && \
+    ./easyrsa build-ca nopass && \
+    ./easyrsa gen-dh && \
+    ./easyrsa build-server-full server nopass
+
+EXPOSE 1194/udp
+CMD ["openvpn", "--config", "/etc/openvpn/server.conf"]
+
+Nakijken:
+--[[   user_data = <<-EOF
+              #!/bin/bash
+              apt-get update
+              apt-get install -y openvpn easy-rsa
+              make-cadir ~/openvpn-ca
+              cd ~/openvpn-ca
+              source vars
+              ./clean-all
+              ./build-ca --batch
+              ./build-key-server --batch server
+              ./build-dh
+              openvpn --genkey --secret keys/ta.key
+              cp keys/{server.crt,server.key,ca.crt,ta.key,dh2048.pem} /etc/openvpn
+              gunzip -c /usr/share/doc/openvpn/examples/sample-config-files/server.conf.gz > /etc/openvpn/server.conf
+              sed -i 's/;tls-auth ta.key 0/tls-auth ta.key 0/g' /etc/openvpn/server.conf
+              sed -i 's/;cipher AES-256-CBC/cipher AES-256-CBC/g' /etc/openvpn/server.conf
+              echo 'push "route 10.0.0.0 255.255.0.0"' >> /etc/openvpn/server.conf
+              systemctl start openvpn@server
+              systemctl enable openvpn@server
+              EOF ]]
