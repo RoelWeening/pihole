@@ -19,14 +19,14 @@ jobs:
         uses: docker/login-action@v2
         with:
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PAT }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Build the Docker image using the Dockerfile at the specified path
+      # Build the Docker image using the Dockerfile in the "docker" folder
       - name: Build Docker image
         run: |
-          docker build -t ghcr.io/${{ github.repository_owner }}/${{ github.repository }}:pihole-latest -f docker/Dockerfile.pihole .
-
-      # Push the Docker image to GitHub Container Registry
-      - name: Push Docker image
-        run: |
-          docker push ghcr.io/${{ github.repository_owner }}/${{ github.repository }}:pihole-latest
+          docker buildx build \
+            --cache-from type=gha \
+            --cache-to type=gha,mode=max \
+            -t ghcr.io/${{ github.repository_owner }}/${{ github.repository }}:main \
+            -f docker/Dockerfile.pihole \
+            --push .
