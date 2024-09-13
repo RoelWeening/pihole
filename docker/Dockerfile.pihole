@@ -1,6 +1,9 @@
 # Use the official Pi-hole Docker image
 FROM pihole/pihole:latest
 
+# Set the timezone (TZ) environment variable
+ENV TZ="Europe/Amsterdam"
+
 # Install required packages: curl, bash, and unbound
 RUN apt-get update && \
     apt-get install -y curl bash unbound && \
