@@ -24,4 +24,4 @@ jobs:
       # Build the Docker image using the Dockerfile in the "docker" folder
       - name: Build Docker image
         run: |
-          docker buildx build --cache-from type=gha --cache-to type=gha,mode=max -t ghcr.io/${{ github.repository_owner }}/${{ github.repository }}:main -f docker/Dockerfile.pihole --push .
+          docker buildx build -t ghcr.io/${{ github.repository_owner }}/${{ github.repository }}:main -f ./docker/Dockerfile.pihole .
