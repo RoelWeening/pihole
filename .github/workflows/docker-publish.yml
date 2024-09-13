@@ -24,7 +24,7 @@ jobs:
       # Build the Docker image using the Dockerfile at the specified path
       - name: Build Docker image
         run: |
-          docker build -t ghcr.io/${{ github.repository_owner }}/${{ github.repository }}:pihole-latest -f docker/Dockerfile.pihole .
+          docker build -t ghcr.io/${{ github.repository_owner }}/${{ github.repository }}:pihole-latest -f docker/Dockerfile.pihole
 
       # Push the Docker image to GitHub Container Registry
       - name: Push Docker image
