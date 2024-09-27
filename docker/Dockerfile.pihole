@@ -22,12 +22,6 @@ RUN mkdir -p /etc/services.d/unbound
 COPY ../files/unbound-run.sh /etc/services.d/unbound/run
 RUN chmod +x /etc/services.d/unbound/run
 
-# Install the LCARS theme
-RUN git clone https://github.com/arevindh/pihole-lcars.git /tmp/pihole-lcars && \
-    cd /tmp/pihole-lcars && \
-    bash install.sh && \
-    rm -rf /tmp/pihole-lcars
-
 # Copy adlists and regex lists
 COPY ../files/adlists.list /etc/pihole/adlists.list
 COPY ../files/regex.list /etc/pihole/regex.list
