@@ -1,13 +1,13 @@
 FROM pihole/pihole:latest
 
 # Set environment variables
-ENV WEBPASSWORD="pihole123"
-ENV TZ="UTC"
+ENV WEBPASSWORD="your_secure_password"
+ENV TZ="Europe/Amsterdam"
 ENV PIHOLE_UPDATE_GRAVITY=true
 ENV DNSSEC=true
 
 # Install Unbound and wget
-RUN apt-get update && apt-get install -y unbound wget ca-certificates sqlite3
+RUN apt-get update && apt-get install -y unbound wget ca-certificates
 
 # Ensure the /var/lib/unbound directory exists and has correct permissions
 RUN mkdir -p /var/lib/unbound \
@@ -19,17 +19,7 @@ RUN wget -O /var/lib/unbound/root.hints https://www.internic.net/domain/named.ca
 # Copy Unbound configuration
 COPY ../files/unbound.conf /etc/unbound/unbound.conf.d/pi-hole.conf
 
-# Copy initialization scripts
-COPY ../files/10-unbound.sh /etc/cont-init.d/
-COPY ../files/20-import_adlists.sh /etc/cont-init.d/
-COPY ../files/30-import_regex.sh /etc/cont-init.d/
-RUN chmod +x /etc/cont-init.d/*
-
-# Copy Unbound service script
-COPY ../files/unbound-run.sh /etc/services.d/unbound/run
-RUN chmod +x /etc/services.d/unbound/run
-
-# Copy Pi-hole configuration
+# Configure Pi-hole to use Unbound
 COPY ../files/01-pihole.conf /etc/dnsmasq.d/01-pihole.conf
 
 # Add custom blocklist URLs
@@ -38,17 +28,12 @@ COPY ../files/adlists.list /etc/pihole/adlists.list
 # Add regex filters
 COPY ../files/regex.list /etc/pihole/regex.list
 
-# Copy the import script
-COPY ../files/import_adlists.sh /usr/local/bin/import_adlists.sh
-RUN chmod +x /usr/local/bin/import_adlists.sh
-
-# Copy the import script
-COPY ../files/import_regex.sh /usr/local/bin/import_regex.sh
-RUN chmod +x /usr/local/bin/import_regex.sh
-
 # Copy custom start script
-COPY ../files/start.sh /start.sh
+COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
 # Expose ports
 EXPOSE 53/tcp 53/udp 80/tcp
+
+# Set the entrypoint
+ENTRYPOINT ["/start.sh"]
