@@ -19,16 +19,4 @@ fi
 
 # Start Pi-hole
 echo "Starting Pi-hole..."
-exec /s6-init &
-
-# Wait for Pi-hole to initialize
-sleep 10
-
-# Import adlists
-/usr/local/bin/import_adlists.sh
-
-# Import regex filters
-/usr/local/bin/import_regex.sh
-
-# Wait and keep container running
-wait
+exec /s6-init
