@@ -1,48 +1,49 @@
+# Use the official Pi-hole image as the base
 FROM pihole/pihole:latest
 
 # Set environment variables
-ENV WEBPASSWORD="your_secure_password"
 ENV TZ="Europe/Amsterdam"
-ENV PIHOLE_UPDATE_GRAVITY=true
-ENV DNSSEC=true
+ENV WEBPASSWORD="your_secure_password"
+ENV DNSSEC="true"
+ENV PIHOLE_DNS_1="127.0.0.1#5335"
+ENV PIHOLE_DNS_2=""
 
-# apt task
-RUN apt-get update && apt-get install -y unbound wget ca-certificates
+# Install required packages
+RUN apt-get update && \
+    apt-get install -y unbound git sqlite3 curl && \
+    rm -rf /var/lib/apt/lists/*
 
-# Ensure the /var/lib/unbound directory exists and has correct permissions
-RUN mkdir -p /var/lib/unbound \
-    && chown -R unbound:unbound /var/lib/unbound
+# Download and set up Unbound
+RUN curl -o /var/lib/unbound/root.hints https://www.internic.net/domain/named.cache
+COPY unbound.conf /etc/unbound/unbound.conf
 
-# Fetch root hints
-RUN wget -O /var/lib/unbound/root.hints https://www.internic.net/domain/named.cache
+# Create an s6 service for Unbound
+RUN mkdir -p /etc/services.d/unbound
+COPY ../files/unbound-run.sh /etc/services.d/unbound/run
+RUN chmod +x /etc/services.d/unbound/run
 
-# Switch to unbound user
-USER unbound
+# Install the LCARS theme
+RUN git clone https://github.com/arevindh/pihole-lcars.git /tmp/pihole-lcars && \
+    cd /tmp/pihole-lcars && \
+    bash install.sh && \
+    rm -rf /tmp/pihole-lcars
 
-# Initialize the root key
-RUN unbound-anchor -v -a "/var/lib/unbound/root.key"
-
-# Switch back to root
-USER root
-
-# Copy Unbound configuration
-COPY ../files/unbound.conf /etc/unbound/unbound.conf.d/pi-hole.conf
-
-# Configure Pi-hole to use Unbound
-COPY ../files/01-pihole.conf /etc/dnsmasq.d/01-pihole.conf
-
-# Add custom blocklist URLs
+# Copy adlists and regex lists
 COPY ../files/adlists.list /etc/pihole/adlists.list
-
-# Add regex filters
 COPY ../files/regex.list /etc/pihole/regex.list
 
-# Copy custom start script
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
+# Copy initialization script to import lists and update gravity
+COPY ../files/50-import-lists.sh /etc/cont-init.d/50-import-lists.sh
+RUN chmod +x /etc/cont-init.d/50-import-lists.sh
 
-# Expose ports
-EXPOSE 53/tcp 53/udp 80/tcp
+# Expose necessary ports
+EXPOSE 53/tcp 53/udp 80/tcp 443/tcp
 
-# Set the entrypoint
-ENTRYPOINT ["/start.sh"]
+# Set s6 overlay environment variables
+ENV S6_LOGGING=0
+ENV S6_KEEP_ENV=1
+ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
+
+# Start Pi-hole
+ENTRYPOINT [ "/s6-init" ]
+CMD []
