@@ -43,24 +43,5 @@ COPY files/regex.list /etc/pihole/regex.list
 # Update Pi-hole gravity to apply blocklists and regexes
 RUN pihole -g
 
-# Do not override the CMD or ENTRYPOINT; use the defaults from the base image
-
-# another way to ingest hostslist
-# Copy scripts to download hosts lists and regex filters
-# COPY ../files/update_lists.sh /etc/pihole/update_lists.sh
-# RUN chmod +x /etc/pihole/update_lists.sh
-
-# Set the entrypoint to run the update script before starting Pi-hole
-# ENTRYPOINT ["/etc/pihole/update_lists.sh"]
-
-# another way to ingest regex
-# Add regex filters to Pi-hole
-# RUN curl -sSL https://raw.githubusercontent.com/mmotti/pihole-regex/master/regex.list | while read -r regex; do \
-#      pihole --regex "$regex"; \
-#    done
-
-# Update Pi-hole gravity to apply blocklists and regexes
-RUN pihole -g
-
 # Start Unbound and Pi-hole services when container starts
 CMD unbound -d & pihole-FTL
