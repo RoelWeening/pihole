@@ -28,7 +28,8 @@ EXPOSE 53/tcp 53/udp 80/tcp 443/tcp
 # Set environment variables before running Pi-hole commands
 ENV DNSMASQ_USER=root \
     PIHOLE_DNS_=127.0.0.1#5335 \
-    DNSSEC=true
+    DNSSEC=true \
+    WEBPASSWORD="pihole123"
 
 # Add blocklist URLs to Pi-hole
 RUN echo 'https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts' >> /etc/pihole/adlists.list && \
