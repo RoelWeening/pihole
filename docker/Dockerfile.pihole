@@ -26,7 +26,7 @@ COPY ../files/30-import_regex.sh /etc/cont-init.d/
 RUN chmod +x /etc/cont-init.d/*
 
 # Copy Unbound service script
-COPY unbound-run.sh /etc/services.d/unbound/run
+COPY ../files/unbound-run.sh /etc/services.d/unbound/run
 RUN chmod +x /etc/services.d/unbound/run
 
 # Copy Pi-hole configuration
