@@ -6,7 +6,7 @@ ENV TZ="Europe/Amsterdam"
 ENV PIHOLE_UPDATE_GRAVITY=true
 ENV DNSSEC=true
 
-# Install Unbound and wget
+# apt task
 RUN apt-get update && apt-get install -y unbound wget ca-certificates
 
 # Ensure the /var/lib/unbound directory exists and has correct permissions
