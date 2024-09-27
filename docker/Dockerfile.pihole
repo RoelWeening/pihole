@@ -16,6 +16,15 @@ RUN mkdir -p /var/lib/unbound \
 # Fetch root hints
 RUN wget -O /var/lib/unbound/root.hints https://www.internic.net/domain/named.cache
 
+# Switch to unbound user
+USER unbound
+
+# Initialize the root key
+RUN unbound-anchor -v -a "/var/lib/unbound/root.key"
+
+# Switch back to root
+USER root
+
 # Copy Unbound configuration
 COPY ../files/unbound.conf /etc/unbound/unbound.conf.d/pi-hole.conf
 
