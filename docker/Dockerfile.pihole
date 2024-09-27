@@ -22,8 +22,12 @@ COPY ../files/unbound.conf /etc/unbound/unbound.conf.d/pi-hole.conf
 # Configure Pi-hole to use Unbound
 COPY ../files/01-pihole.conf /etc/dnsmasq.d/01-pihole.conf
 
-# Add custom blocklist URLs
-COPY ../files/adlists.list /etc/pihole/adlists.list
+# Add blocklist URLs to Pi-hole
+RUN echo 'https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts' >> /etc/pihole/adlists.list && \
+    echo 'https://raw.githubusercontent.com/PolishFiltersTeam/KADhosts/master/KADhosts.txt' >> /etc/pihole/adlists.list && \
+    echo 'https://raw.githubusercontent.com/FadeMind/hosts.extras/master/add.Spam/hosts' >> /etc/pihole/adlists.list && \
+    echo 'https://v.firebog.net/hosts/static/w3kbl.txt' >> /etc/pihole/adlists.list && \
+    echo 'https://gist.githubusercontent.com/anudeepND/adac7982307fec6ee23605e281a57f1a/raw/Test.txt' >> /etc/pihole/adlists.list
 
 # Add regex filters
 COPY ../files/regex.list /etc/pihole/regex.list
