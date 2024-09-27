@@ -1,39 +1,36 @@
-# Use the official Pi-hole Docker image
+# Use the official Pi-hole Docker image as the base
 FROM pihole/pihole:latest
 
 # Set the timezone (TZ) environment variable
 ENV TZ="Europe/Amsterdam"
 
-# Install required packages: curl, bash, and unbound
+# Install unbound
 RUN apt-get update && \
-    apt-get install -y curl bash unbound && \
-    apt-get clean
+    apt-get install -y unbound && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Unbound configuration for Pi-hole with DNSSEC
-RUN mkdir -p /etc/unbound/unbound.conf.d/ && \
-    echo 'server:
-            interface: 0.0.0.0
-            access-control: 10.0.0.0/16 allow
-            do-ip4: yes
-            do-udp: yes
-            do-tcp: yes
-            prefer-ip6: no
-            hide-identity: yes
-            hide-version: yes
-            harden-glue: yes
-            harden-dnssec-stripped: yes
-            use-caps-for-id: yes
-            edns-buffer-size: 1232
-            cache-min-ttl: 3600
-            cache-max-ttl: 86400
-            prefetch: yes
-            prefetch-key: yes
-            num-threads: 4
-            # DNSSEC validation
-            auto-trust-anchor-file: "/var/lib/unbound/root.key"
-            # Pi-hole specific FTL
-            private-address: 10.0.0.0/16' > /etc/unbound/unbound.conf.d/pi-hole.conf
+# Copy unbound configuration
+COPY unbound.conf /etc/unbound/unbound.conf.d/pi-hole.conf
 
+# Copy scripts to download hosts lists and regex filters
+COPY update_lists.sh /etc/pihole/update_lists.sh
+RUN chmod +x /etc/pihole/update_lists.sh
+
+# Set the entrypoint to run the update script before starting Pi-hole
+ENTRYPOINT ["/bin/bash", "/etc/pihole/update_lists.sh"]
+
+# Expose necessary ports
+EXPOSE 53/tcp 53/udp 80/tcp 443/tcp
+
+# Set environment variables
+ENV DNSMASQ_USER=root
+ENV PIHOLE_DNS_="127.0.0.1#5335"
+ENV DNSSEC="true"
+
+# Start Pi-hole
+CMD ["bash", "/start.sh"]
+000000000000000000000000000000000000000
 # Download the latest root trust anchor for DNSSEC
 RUN unbound-anchor -a /var/lib/unbound/root.key
 
@@ -49,8 +46,9 @@ RUN curl -sSL https://someurl.com/regexlist.txt | while read -r regex; do \
 # Update Pi-hole gravity to apply blocklists and regexes
 RUN pihole -g
 
-# Expose necessary ports (53/UDP, 80/TCP, 443/TCP)
-EXPOSE 53/udp 80/tcp 443/tcp
-
 # Start Unbound and Pi-hole services when container starts
-CMD [ "/bin/bash", "-c", "unbound -d & pihole-FTL" ]
+#CMD [ "/bin/bash", "-c", "unbound -d & pihole-FTL" ]
+
+
+
+
