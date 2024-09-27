@@ -4,6 +4,7 @@ FROM pihole/pihole:latest
 ENV WEBPASSWORD="pihole123"
 ENV TZ="UTC"
 ENV PIHOLE_UPDATE_GRAVITY=true
+ENV DNSSEC=true
 
 # Install Unbound and wget
 RUN apt-get update && apt-get install -y unbound wget ca-certificates
