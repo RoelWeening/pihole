@@ -2,25 +2,18 @@ FROM pihole/pihole:latest
 
 # Set environment variables
 ENV WEBPASSWORD="pihole123"
-ENV TZ="Europe/Amsterdam"
+ENV TZ="UTC"
 ENV PIHOLE_UPDATE_GRAVITY=true
 
-# Install Unbound
+# Install Unbound and wget
 RUN apt-get update && apt-get install -y unbound wget ca-certificates
 
-# Ensure the /var/lib/unbound directory exists
-RUN mkdir -p /var/lib/unbound
-RUN chown -R unbound:unbound /var/lib/unbound
+# Ensure the /var/lib/unbound directory exists and has correct permissions
+RUN mkdir -p /var/lib/unbound \
+    && chown -R unbound:unbound /var/lib/unbound
 
 # Fetch root hints
 RUN wget -O /var/lib/unbound/root.hints https://www.internic.net/domain/named.cache
-
-# Switch to unbound user and initialize the root key with verbose output
-USER unbound
-RUN unbound-anchor -v -a "/var/lib/unbound/root.key"
-
-# Switch back to root user
-USER root
 
 # Copy Unbound configuration
 COPY ../files/unbound.conf /etc/unbound/unbound.conf.d/pi-hole.conf
@@ -28,17 +21,18 @@ COPY ../files/unbound.conf /etc/unbound/unbound.conf.d/pi-hole.conf
 # Configure Pi-hole to use Unbound
 COPY ../files/01-pihole.conf /etc/dnsmasq.d/01-pihole.conf
 
-# Enable DNSSEC in Pi-hole (optional)
-RUN echo 'DNSSEC=true' >> /etc/pihole/setupVars.conf
-
 # Add custom blocklist URLs
 COPY ../files/adlists.list /etc/pihole/adlists.list
 
 # Add regex filters
 COPY ../files/regex.list /etc/pihole/regex.list
 
+# Copy custom start script
+COPY ../files/start.sh /start.sh
+RUN chmod +x /start.sh
+
 # Expose ports
 EXPOSE 53/tcp 53/udp 80/tcp
 
-# Entry point
-ENTRYPOINT ["/s6-init"]
+# Set the entrypoint
+ENTRYPOINT ["/start.sh"]
