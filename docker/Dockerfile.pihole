@@ -14,13 +14,13 @@ RUN apt-get update && \
 COPY files/unbound.conf /etc/unbound/unbound.conf.d/pi-hole.conf
 
 # Create Unbound service directory for s6 supervision
-RUN mkdir -p /etc/services.d/unbound
+# RUN mkdir -p /etc/services.d/unbound
 
 # Copy Unbound run script
-COPY files/unbound.run /etc/services.d/unbound/run
+# COPY files/unbound.run /etc/services.d/unbound/run
 
 # Make Unbound run script executable
-RUN chmod +x /etc/services.d/unbound/run
+# RUN chmod +x /etc/services.d/unbound/run
 
 # Expose necessary ports
 EXPOSE 53/tcp 53/udp 80/tcp 443/tcp
