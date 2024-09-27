@@ -6,15 +6,21 @@ ENV TZ="Europe/Amsterdam"
 ENV PIHOLE_UPDATE_GRAVITY=true
 
 # Install Unbound
-RUN apt-get update && apt-get install -y unbound wget
+RUN apt-get update && apt-get install -y unbound wget ca-certificates
 
 # Ensure the /var/lib/unbound directory exists
 RUN mkdir -p /var/lib/unbound
 RUN chown -R unbound:unbound /var/lib/unbound
 
-# Fetch root hints and initialize root key
-RUN wget -O /var/lib/unbound/root.hints https://www.internic.net/domain/named.cache \
-    && unbound-anchor -a "/var/lib/unbound/root.key"
+# Fetch root hints
+RUN wget -O /var/lib/unbound/root.hints https://www.internic.net/domain/named.cache
+
+# Switch to unbound user and initialize the root key with verbose output
+USER unbound
+RUN unbound-anchor -v -a "/var/lib/unbound/root.key"
+
+# Switch back to root user
+USER root
 
 # Copy Unbound configuration
 COPY ../files/unbound.conf /etc/unbound/unbound.conf.d/pi-hole.conf
