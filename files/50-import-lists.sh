@@ -1,4 +1,4 @@
-#!/usr/bin/with-contenv bash
+#!/bin/bash
 # Import adlists into gravity database
 if [ -f /etc/pihole/adlists.list ]; then
     while read -r adlist; do
