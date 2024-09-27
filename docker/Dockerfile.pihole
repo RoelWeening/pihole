@@ -31,24 +31,29 @@ ENV DNSMASQ_USER=root
 ENV PIHOLE_DNS_="127.0.0.1#5335"
 ENV DNSSEC="true"
 
-# Start Pi-hole
-CMD ["bash", "/start.sh"]
-000000000000000000000000000000000000000
-
 # Add blocklists to Pi-hole
 RUN pihole -b https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts && \
-    pihole -b https://raw.githubusercontent.com/PolishFiltersTeam/KADhosts/master/KADhosts.txt
+    pihole -b https://raw.githubusercontent.com/PolishFiltersTeam/KADhosts/master/KADhosts.txt && \
+    pihole -b https://raw.githubusercontent.com/FadeMind/hosts.extras/master/add.Spam/hosts && \
+    pihole -b https://v.firebog.net/hosts/static/w3kbl.txt && \
+    pihole -b https://gist.githubusercontent.com/anudeepND/adac7982307fec6ee23605e281a57f1a/raw/5b8582b906a9497624c3f3187a49ebc23a9cf2fb/Test.txt
+
+# Copy the regex filters into the image
+COPY regex.list /etc/pihole/regex.list
 
 # Add regex filters to Pi-hole
-RUN curl -sSL https://someurl.com/regexlist.txt | while read -r regex; do \
+RUN curl -sSL https://raw.githubusercontent.com/mmotti/pihole-regex/master/regex.list | while read -r regex; do \
       pihole --regex "$regex"; \
     done
 
 # Update Pi-hole gravity to apply blocklists and regexes
 RUN pihole -g
 
+# Start Pi-hole
+#CMD ["bash", "/start.sh"]
+
 # Start Unbound and Pi-hole services when container starts
-#CMD [ "/bin/bash", "-c", "unbound -d & pihole-FTL" ]
+CMD [ "/bin/bash", "-c", "unbound -d & pihole-FTL" ]
 
 
 
