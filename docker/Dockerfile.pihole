@@ -17,7 +17,7 @@ COPY ../files/unbound.conf /etc/unbound/unbound.conf.d/pi-hole.conf
 #RUN unbound-anchor -a /var/lib/unbound/root.key
 
 # Copy scripts to download hosts lists and regex filters
-COPY update_lists.sh /etc/pihole/update_lists.sh
+COPY ../files/update_lists.sh /etc/pihole/update_lists.sh
 RUN chmod +x /etc/pihole/update_lists.sh
 
 # Set the entrypoint to run the update script before starting Pi-hole
