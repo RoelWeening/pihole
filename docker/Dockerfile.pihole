@@ -7,7 +7,7 @@ ENV PIHOLE_UPDATE_GRAVITY=true
 ENV DNSSEC=true
 
 # Install Unbound and wget
-RUN apt-get update && apt-get install -y unbound wget ca-certificates
+RUN apt-get update && apt-get install -y unbound wget ca-certificates sqlite3
 
 # Ensure the /var/lib/unbound directory exists and has correct permissions
 RUN mkdir -p /var/lib/unbound \
@@ -19,7 +19,17 @@ RUN wget -O /var/lib/unbound/root.hints https://www.internic.net/domain/named.ca
 # Copy Unbound configuration
 COPY ../files/unbound.conf /etc/unbound/unbound.conf.d/pi-hole.conf
 
-# Configure Pi-hole to use Unbound
+# Copy initialization scripts
+COPY ../files/10-unbound.sh /etc/cont-init.d/
+COPY ../files/20-import_adlists.sh /etc/cont-init.d/
+COPY ../files/30-import_regex.sh /etc/cont-init.d/
+RUN chmod +x /etc/cont-init.d/*
+
+# Copy Unbound service script
+COPY unbound-run.sh /etc/services.d/unbound/run
+RUN chmod +x /etc/services.d/unbound/run
+
+# Copy Pi-hole configuration
 COPY ../files/01-pihole.conf /etc/dnsmasq.d/01-pihole.conf
 
 # Add custom blocklist URLs
@@ -42,6 +52,3 @@ RUN chmod +x /start.sh
 
 # Expose ports
 EXPOSE 53/tcp 53/udp 80/tcp
-
-# Set the entrypoint
-ENTRYPOINT ["/start.sh"]
