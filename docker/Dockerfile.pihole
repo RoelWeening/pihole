@@ -45,8 +45,5 @@ COPY files/regex.list /etc/pihole/regex.list
 COPY files/02-set-webpassword.sh /etc/cont-init.d/02-set-webpassword.sh
 RUN chmod +x /etc/cont-init.d/02-set-webpassword.sh
 
-# Update Pi-hole gravity to apply blocklists and regexes
-RUN pihole -g
-
 # Start Unbound and Pi-hole services when container starts
 CMD unbound -d & pihole-FTL
