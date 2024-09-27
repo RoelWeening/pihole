@@ -5,8 +5,9 @@ FROM pihole/pihole:latest
 ENV TZ="Europe/Amsterdam"
 ENV WEBPASSWORD="pihole123"
 ENV DNSSEC="true"
-ENV PIHOLE_DNS_1="127.0.0.1#5335"
-ENV PIHOLE_DNS_2=""
+ENV TEMPERATUREUNIT="c"
+ENV WEBTHEME= "lcars"
+ENV PIHOLE_DNS_="127.0.0.1#5335"
 
 # Install required packages
 RUN apt-get update && \
