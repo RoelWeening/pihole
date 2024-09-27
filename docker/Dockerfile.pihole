@@ -32,6 +32,10 @@ COPY ../files/regex.list /etc/pihole/regex.list
 COPY import_adlists.sh /usr/local/bin/import_adlists.sh
 RUN chmod +x /usr/local/bin/import_adlists.sh
 
+# Copy the import script
+COPY import_regex.sh /usr/local/bin/import_regex.sh
+RUN chmod +x /usr/local/bin/import_regex.sh
+
 # Copy custom start script
 COPY ../files/start.sh /start.sh
 RUN chmod +x /start.sh
