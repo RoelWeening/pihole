@@ -6,7 +6,7 @@ ENV TZ="Europe/Amsterdam"
 ENV WEBPASSWORD="pihole123"
 ENV DNSSEC="true"
 ENV TEMPERATUREUNIT="c"
-ENV WEBTHEME= "lcars"
+ENV WEBTHEME="lcars"
 ENV PIHOLE_DNS_="127.0.0.1#5335"
 
 # Install required packages
