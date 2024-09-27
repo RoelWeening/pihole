@@ -1,0 +1,5 @@
+https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+https://raw.githubusercontent.com/PolishFiltersTeam/KADhosts/master/KADhosts.txt
+https://raw.githubusercontent.com/FadeMind/hosts.extras/master/add.Spam/hosts
+https://v.firebog.net/hosts/static/w3kbl.txt
+https://gist.githubusercontent.com/anudeepND/adac7982307fec6ee23605e281a57f1a/raw/Test.txt
