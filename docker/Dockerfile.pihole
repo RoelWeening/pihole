@@ -4,52 +4,63 @@ FROM pihole/pihole:latest
 # Set the timezone (TZ) environment variable
 ENV TZ="Europe/Amsterdam"
 
-# Install unbound
+# Install Unbound
 RUN apt-get update && \
     apt-get install -y unbound && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy unbound configuration
-COPY ../files/unbound.conf /etc/unbound/unbound.conf.d/pi-hole.conf
+# Copy Unbound configuration
+COPY files/unbound.conf /etc/unbound/unbound.conf.d/pi-hole.conf
 
-# another way to ingest hostslist
-# Copy scripts to download hosts lists and regex filters
-#COPY ../files/update_lists.sh /etc/pihole/update_lists.sh
-#RUN chmod +x /etc/pihole/update_lists.sh
+# Create Unbound service directory for s6 supervision
+RUN mkdir -p /etc/services.d/unbound
 
-# Set the entrypoint to run the update script before starting Pi-hole
-#ENTRYPOINT ["/etc/pihole/update_lists.sh"]
+# Copy Unbound run script
+COPY files/unbound.run /etc/services.d/unbound/run
+
+# Make Unbound run script executable
+RUN chmod +x /etc/services.d/unbound/run
 
 # Expose necessary ports
 EXPOSE 53/tcp 53/udp 80/tcp 443/tcp
 
-# Set environment variables
-ENV DNSMASQ_USER=root
-ENV PIHOLE_DNS_="127.0.0.1#5335"
-ENV DNSSEC="true"
+# Set environment variables before running Pi-hole commands
+ENV DNSMASQ_USER=root \
+    PIHOLE_DNS_=127.0.0.1#5335 \
+    DNSSEC=true
 
-# Add blocklists to Pi-hole
-RUN pihole -b https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts && \
-    pihole -b https://raw.githubusercontent.com/PolishFiltersTeam/KADhosts/master/KADhosts.txt && \
-    pihole -b https://raw.githubusercontent.com/FadeMind/hosts.extras/master/add.Spam/hosts && \
-    pihole -b https://v.firebog.net/hosts/static/w3kbl.txt && \
-    pihole -b https://gist.githubusercontent.com/anudeepND/adac7982307fec6ee23605e281a57f1a/raw/5b8582b906a9497624c3f3187a49ebc23a9cf2fb/Test.txt
+# Add blocklist URLs to Pi-hole
+RUN echo 'https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts' >> /etc/pihole/adlists.list && \
+    echo 'https://raw.githubusercontent.com/PolishFiltersTeam/KADhosts/master/KADhosts.txt' >> /etc/pihole/adlists.list && \
+    echo 'https://raw.githubusercontent.com/FadeMind/hosts.extras/master/add.Spam/hosts' >> /etc/pihole/adlists.list && \
+    echo 'https://v.firebog.net/hosts/static/w3kbl.txt' >> /etc/pihole/adlists.list && \
+    echo 'https://gist.githubusercontent.com/anudeepND/adac7982307fec6ee23605e281a57f1a/raw/Test.txt' >> /etc/pihole/adlists.list
 
-# another way to ingest regex
 # Copy the regex filters into the image
-#COPY regex.list /etc/pihole/regex.list
-
-# Add regex filters to Pi-hole
-RUN curl -sSL https://raw.githubusercontent.com/mmotti/pihole-regex/master/regex.list | while read -r regex; do \
-      pihole --regex "$regex"; \
-    done
+COPY files/regex.list /etc/pihole/regex.list
 
 # Update Pi-hole gravity to apply blocklists and regexes
 RUN pihole -g
 
-# Start Pi-hole
-#CMD ["/start.sh"]
+# Do not override the CMD or ENTRYPOINT; use the defaults from the base image
+
+# another way to ingest hostslist
+# Copy scripts to download hosts lists and regex filters
+# COPY ../files/update_lists.sh /etc/pihole/update_lists.sh
+# RUN chmod +x /etc/pihole/update_lists.sh
+
+# Set the entrypoint to run the update script before starting Pi-hole
+# ENTRYPOINT ["/etc/pihole/update_lists.sh"]
+
+# another way to ingest regex
+# Add regex filters to Pi-hole
+# RUN curl -sSL https://raw.githubusercontent.com/mmotti/pihole-regex/master/regex.list | while read -r regex; do \
+#      pihole --regex "$regex"; \
+#    done
+
+# Update Pi-hole gravity to apply blocklists and regexes
+RUN pihole -g
 
 # Start Unbound and Pi-hole services when container starts
 CMD unbound -d & pihole-FTL
