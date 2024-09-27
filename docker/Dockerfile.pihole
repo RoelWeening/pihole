@@ -6,7 +6,10 @@ ENV TZ="Europe/Amsterdam"
 ENV PIHOLE_UPDATE_GRAVITY=true
 
 # Install Unbound
-RUN apt-get update && apt-get install -y unbound
+RUN apt-get update && apt-get install -y unbound wget
+
+# Ensure the /var/lib/unbound directory exists
+RUN mkdir -p /var/lib/unbound
 
 # Fetch root hints and initialize root key
 RUN wget -O /var/lib/unbound/root.hints https://www.internic.net/domain/named.cache \
