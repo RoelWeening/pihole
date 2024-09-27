@@ -21,7 +21,7 @@ COPY ../files/update_lists.sh /etc/pihole/update_lists.sh
 RUN chmod +x /etc/pihole/update_lists.sh
 
 # Set the entrypoint to run the update script before starting Pi-hole
-ENTRYPOINT ["/bin/bash", "/etc/pihole/update_lists.sh"]
+ENTRYPOINT ["/etc/pihole/update_lists.sh"]
 
 # Expose necessary ports
 EXPOSE 53/tcp 53/udp 80/tcp 443/tcp
@@ -39,7 +39,7 @@ RUN pihole -b https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts &
     pihole -b https://gist.githubusercontent.com/anudeepND/adac7982307fec6ee23605e281a57f1a/raw/5b8582b906a9497624c3f3187a49ebc23a9cf2fb/Test.txt
 
 # Copy the regex filters into the image
-COPY regex.list /etc/pihole/regex.list
+#COPY regex.list /etc/pihole/regex.list
 
 # Add regex filters to Pi-hole
 RUN curl -sSL https://raw.githubusercontent.com/mmotti/pihole-regex/master/regex.list | while read -r regex; do \
@@ -50,10 +50,10 @@ RUN curl -sSL https://raw.githubusercontent.com/mmotti/pihole-regex/master/regex
 RUN pihole -g
 
 # Start Pi-hole
-#CMD ["bash", "/start.sh"]
+#CMD ["/start.sh"]
 
 # Start Unbound and Pi-hole services when container starts
-CMD [ "/bin/bash", "-c", "unbound -d & pihole-FTL" ]
+CMD unbound -d & pihole-FTL
 
 
 
