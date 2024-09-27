@@ -1,4 +1,4 @@
-#!/usr/bin/with-contenv bash
+#!/bin/bash
 # File: /etc/cont-init.d/02-set-webpassword.sh
 
 if [[ -n "${WEBPASSWORD}" ]]; then
