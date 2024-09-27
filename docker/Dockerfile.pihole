@@ -11,7 +11,10 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy unbound configuration
-COPY unbound.conf /etc/unbound/unbound.conf.d/pi-hole.conf
+COPY ../files/unbound.conf /etc/unbound/unbound.conf.d/pi-hole.conf
+
+# Download the latest root trust anchor for DNSSEC
+RUN unbound-anchor -a /var/lib/unbound/root.key
 
 # Copy scripts to download hosts lists and regex filters
 COPY update_lists.sh /etc/pihole/update_lists.sh
@@ -31,12 +34,10 @@ ENV DNSSEC="true"
 # Start Pi-hole
 CMD ["bash", "/start.sh"]
 000000000000000000000000000000000000000
-# Download the latest root trust anchor for DNSSEC
-RUN unbound-anchor -a /var/lib/unbound/root.key
 
 # Add blocklists to Pi-hole
-RUN pihole -b https://someblocklisturl1.com/list.txt && \
-    pihole -b https://someblocklisturl2.com/list.txt
+RUN pihole -b https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts && \
+    pihole -b https://raw.githubusercontent.com/PolishFiltersTeam/KADhosts/master/KADhosts.txt
 
 # Add regex filters to Pi-hole
 RUN curl -sSL https://someurl.com/regexlist.txt | while read -r regex; do \
