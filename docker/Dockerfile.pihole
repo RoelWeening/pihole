@@ -3,7 +3,7 @@ FROM pihole/pihole:latest
 
 # Set environment variables
 ENV TZ="Europe/Amsterdam"
-ENV WEBPASSWORD="your_secure_password"
+ENV WEBPASSWORD="pihole123"
 ENV DNSSEC="true"
 ENV PIHOLE_DNS_1="127.0.0.1#5335"
 ENV PIHOLE_DNS_2=""
