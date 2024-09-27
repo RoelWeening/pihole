@@ -1,10 +1,9 @@
 name: Docker Image CI
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  schedule:
+    # Run the workflow every Monday at 00:00 UTC
+    - cron: '0 0 * * MON'
 
 jobs:
 
